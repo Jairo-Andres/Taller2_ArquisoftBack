@@ -52,5 +52,14 @@ npm install
    ```bash
 npm run dev
   ```
+El backend estará ejecutándose en http://localhost:3001/wsdl.
+
+## Uso
+###Pruebas SOAP
+-Puedes probar los endpoints SOAP utilizando una herramienta como SoapUI o Postman.
+-La URL del WSDL es http://localhost:3001/wsdl.
+-Asegúrate de que la base de datos esté correctamente configurada antes de probar.
+
+
 
      
