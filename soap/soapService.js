@@ -109,7 +109,7 @@ module.exports = (server) => {
           }
         },
 
-        // Nuevo método para obtener las personas registradas en un evento
+        // Método para obtener las personas registradas en un evento
         getRegistrations: async (args) => {
           console.log("Solicitud para obtener registros recibida: ", args);
           try {
@@ -131,6 +131,46 @@ module.exports = (server) => {
             return { registrations: [] };
           }
         },
+
+        // **Nuevo** Método para actualizar los datos de una persona registrada
+        updateRegistration: async (args) => {
+          console.log("Solicitud para actualizar registro recibida: ", args);
+          try {
+            const registration = await Reservation.findByPk(args.id); // Buscar por ID
+            if (registration) {
+              await registration.update({
+                name: args.name || registration.name,
+                email: args.email || registration.email,
+                seats: args.seats || registration.seats,
+              });
+              return { success: `Registro actualizado con éxito.` };
+            } else {
+              return { success: "Registro no encontrado." };
+            }
+          } catch (error) {
+            console.error("Error al actualizar el registro:", error);
+            return { success: "Error al actualizar el registro." };
+          }
+        },
+        
+
+        // **Nuevo** Método para eliminar a una persona registrada
+        deleteRegistration: async (args) => {
+          console.log("Solicitud para eliminar registro recibida: ", args);
+          try {
+            const registration = await Reservation.findByPk(args.id); // Buscar por ID
+            if (registration) {
+              await registration.destroy();
+              return { success: `Registro eliminado con éxito.` };
+            } else {
+              return { success: "Registro no encontrado." };
+            }
+          } catch (error) {
+            console.error("Error al eliminar el registro:", error);
+            return { success: "Error al eliminar el registro." };
+          }
+        },
+        
       },
     },
   };
@@ -228,6 +268,41 @@ module.exports = (server) => {
           </xsd:sequence>
         </xsd:complexType>
 
+        <!-- Esquema para actualizar una persona registrada -->
+       <xsd:element name="updateRegistrationRequest">
+        <xsd:complexType>
+          <xsd:all>
+            <xsd:element name="id" type="xsd:int"/>
+            <xsd:element name="name" type="xsd:string"/>
+            <xsd:element name="email" type="xsd:string"/>
+            <xsd:element name="seats" type="xsd:int"/>
+          </xsd:all>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="updateRegistrationResponse">
+        <xsd:complexType>
+          <xsd:all>
+            <xsd:element name="success" type="xsd:string"/>
+          </xsd:all>
+        </xsd:complexType>
+      </xsd:element>
+
+      <!-- Esquema para eliminar registro -->
+      <xsd:element name="deleteRegistrationRequest">
+        <xsd:complexType>
+          <xsd:all>
+            <xsd:element name="id" type="xsd:int"/>
+          </xsd:all>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="deleteRegistrationResponse">
+        <xsd:complexType>
+          <xsd:all>
+            <xsd:element name="success" type="xsd:string"/>
+          </xsd:all>
+        </xsd:complexType>
+      </xsd:element>
+
         <!-- Esquemas para eliminar y actualizar eventos -->
         <xsd:element name="deleteEventRequest">
           <xsd:complexType>
@@ -291,6 +366,18 @@ module.exports = (server) => {
       <part name="parameters" element="tns:getRegistrationsResponse"/>
     </message>
 
+    <!-- Mensaje para actualizar un registro -->
+    <message name="updateRegistrationRequest"/>
+    <message name="updateRegistrationResponse">
+      <part name="parameters" element="tns:updateRegistrationResponse"/>
+    </message>
+
+    <!-- Mensaje para eliminar un registro -->
+    <message name="deleteRegistrationRequest"/>
+    <message name="deleteRegistrationResponse">
+      <part name="parameters" element="tns:deleteRegistrationResponse"/>
+    </message>
+
     <!-- Mensajes para eliminar y actualizar eventos -->
     <message name="deleteEventRequest"/>
     <message name="deleteEventResponse">
@@ -316,10 +403,19 @@ module.exports = (server) => {
         <input message="tns:getEventsRequest"/>
         <output message="tns:getEventsResponse"/>
       </operation>
-      <!-- Operación para obtener registros -->
+      <!-- Nueva operación para obtener registros -->
       <operation name="getRegistrations">
         <input message="tns:getRegistrationsRequest"/>
         <output message="tns:getRegistrationsResponse"/>
+      </operation>
+      <!-- Operaciones para eliminar y actualizar registros -->
+      <operation name="deleteRegistration">
+        <input message="tns:deleteRegistrationRequest"/>
+        <output message="tns:deleteRegistrationResponse"/>
+      </operation>
+      <operation name="updateRegistration">
+        <input message="tns:updateRegistrationRequest"/>
+        <output message="tns:updateRegistrationResponse"/>
       </operation>
       <!-- Operaciones para eliminar y actualizar eventos -->
       <operation name="deleteEvent">
@@ -365,6 +461,25 @@ module.exports = (server) => {
       <!-- Nueva operación para obtener registros -->
       <operation name="getRegistrations">
         <soap:operation soapAction="http://localhost:3001/wsdl#getRegistrations"/>
+        <input>
+          <soap:body use="literal"/>
+        </input>
+        <output>
+          <soap:body use="literal"/>
+        </output>
+      </operation>
+      <!-- Operaciones para eliminar y actualizar registros -->
+      <operation name="deleteRegistration">
+        <soap:operation soapAction="http://localhost:3001/wsdl#deleteRegistration"/>
+        <input>
+          <soap:body use="literal"/>
+        </input>
+        <output>
+          <soap:body use="literal"/>
+        </output>
+      </operation>
+      <operation name="updateRegistration">
+        <soap:operation soapAction="http://localhost:3001/wsdl#updateRegistration"/>
         <input>
           <soap:body use="literal"/>
         </input>
